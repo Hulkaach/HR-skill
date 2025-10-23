@@ -1,5 +1,5 @@
 -- Create table
-CREATE TABLE candidates (
+CREATE TABLE IF NOT EXISTS candidates(
   id           UUID PRIMARY KEY,
   fio          VARCHAR(255) NOT NULL,
   age          SMALLINT NOT NULL CHECK (age BETWEEN 14 AND 99),
