@@ -12,6 +12,9 @@ target/
 *.iml
 *.ipr
 
+### Project specific ###
+db-secret.yaml
+
 ### Eclipse ###
 .apt_generated
 .classpath
