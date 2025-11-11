@@ -5,6 +5,12 @@ spring:
     import: C:\Skillbox\lections\hr-skill-ninja\db-secret.yaml
   datasource:
     url: "jdbc:postgresql://localhost:5433/postgres"
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30_000
+      leak-detection-threshold: 10_000
+      idle-timeout: 30_000
     driver-class-name: org.postgresql.Driver
   flyway:
     enabled: true

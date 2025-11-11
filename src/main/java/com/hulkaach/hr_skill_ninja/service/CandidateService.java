@@ -1,6 +1,7 @@
 package com.hulkaach.hr_skill_ninja.service;
 
 import com.hulkaach.hr_skill_ninja.dto.*;
+import com.hulkaach.hr_skill_ninja.exception.CustomExceptionChecked;
 import com.hulkaach.hr_skill_ninja.model.CandidateStatus;
 
 import java.util.List;
@@ -8,9 +9,11 @@ import java.util.Set;
 import java.util.UUID;
 
 public interface CandidateService {
-    CandidateDTO create(CreateCandidateRequest request);
+    CandidateDTO create(CreateCandidateRequest request) throws CustomExceptionChecked;
 
     CandidateDTO update(UUID id, UpdateCandidateRequest request);
+
+    CandidatesDTO saveAll(BatchCandidatesCreateRequest request);
 
     CandidateDTO changeStatus(UUID id, ChangeStatusRequest request);
 

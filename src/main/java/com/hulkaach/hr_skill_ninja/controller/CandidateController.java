@@ -1,6 +1,7 @@
 package com.hulkaach.hr_skill_ninja.controller;
 
 import com.hulkaach.hr_skill_ninja.dto.*;
+import com.hulkaach.hr_skill_ninja.exception.CustomExceptionChecked;
 import com.hulkaach.hr_skill_ninja.model.CandidateStatus;
 import com.hulkaach.hr_skill_ninja.service.CandidateService;
 import jakarta.validation.Valid;
@@ -22,8 +23,14 @@ public class CandidateController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CandidateDTO create(@Valid @RequestBody CreateCandidateRequest request) {
+    public CandidateDTO create(@Valid @RequestBody CreateCandidateRequest request) throws CustomExceptionChecked {
         return service.create(request);
+    }
+
+    @PostMapping("/batch")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CandidatesDTO createBatch(@Valid @RequestBody BatchCandidatesCreateRequest request) {
+        return service.saveAll(request);
     }
 
     @PutMapping("/{id}")

@@ -6,6 +6,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
@@ -15,6 +19,7 @@ import java.util.*;
 @RequiredArgsConstructor
 @Slf4j
 public class CandidateRepositoryJDBCTemplateImpl implements CandidateRepository {
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     private final JdbcTemplate jdbcTemplate;
     private static final RowMapper<Candidate> ROW_MAPPER = ((rs, rowNum) -> {
@@ -45,6 +50,43 @@ public class CandidateRepositoryJDBCTemplateImpl implements CandidateRepository 
                 candidate.getCvInfo(),
                 candidate.getStatus().name()
         );
+    }
+
+    @Override
+    public void saveAll(List<Candidate> candidates) {
+        String sql = """
+                INSERT INTO candidates (id, fio, age, position, cv_info, status)
+                VALUES (:id, :fio, :age, :position, :cvInfo, :status)
+                """;
+        log.info("Save all candidates by Named JDBC template");
+        SqlParameterSource[] batch = candidates.stream()
+                .map(this::toParamSource)
+                .toArray(SqlParameterSource[]::new);
+        namedParameterJdbcTemplate.batchUpdate(sql, batch);
+
+//        jdbcTemplate.batchUpdate(
+//                sql,
+//                candidates,
+//                5,
+//                (ps, candidate) -> {
+//                    ps.setObject(1, candidate.getId());
+//                    ps.setString(2, candidate.getFio());
+//                    ps.setShort(3, candidate.getAge());
+//                    ps.setString(4, candidate.getPosition());
+//                    ps.setString(5, candidate.getCvInfo());
+//                    ps.setString(6, candidate.getStatus().name());
+//                }
+//        );
+    }
+
+    private MapSqlParameterSource toParamSource(Candidate candidate) {
+        return new MapSqlParameterSource()
+                .addValue("id", candidate.getId())
+                .addValue("fio", candidate.getFio())
+                .addValue("age", candidate.getAge())
+                .addValue("position", candidate.getPosition())
+                .addValue("cvInfo", candidate.getCvInfo())
+                .addValue("status", candidate.getStatus().name(), Types.VARCHAR);
     }
 
     @Override

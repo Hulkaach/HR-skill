@@ -15,4 +15,8 @@ public class Candidate {
     private String cvInfo;
     private String comment;
     private CandidateStatus status;
+
+    public String getStatusString() {
+        return status.name();
+    }
 }
