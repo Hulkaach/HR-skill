@@ -1,6 +1,7 @@
 package com.hulkaach.hr_skill_ninja.service;
 
 import com.hulkaach.hr_skill_ninja.dto.CommentDto;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,5 +12,5 @@ public interface CommentService {
 
     Optional<CommentDto> findById(UUID id);
 
-    List<CommentDto> findAllCandidateId(UUID candidateId);
+    List<CommentDto> findAllByCandidateId(UUID candidateId);
 }

@@ -8,12 +8,15 @@ import com.hulkaach.hr_skill_ninja.repository.CandidateRepository;
 import com.hulkaach.hr_skill_ninja.repository.CommentRepository;
 import com.hulkaach.hr_skill_ninja.service.CommentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Service
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
@@ -21,6 +24,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
 
     @Override
+    @Transactional
     public CommentDto addCommentToCandidate(UUID candidateId, String author, String commentText) {
         Candidate candidate = candidateRepository.findById(candidateId)
                 .orElseThrow(() -> new IllegalArgumentException("Candidate not found"));
@@ -34,16 +38,16 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<CommentDto> findById(UUID id) {
-        return commentRepository.findById(id).map(commentMapper.toDTO());
+//        return commentRepository.findById(id).map(commentMapper.toDTO());
+        return Optional.empty();
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public List<CommentDto> findAllCandidateId(UUID candidateId) {
-        Candidate candidate = candidateRepository.findById(candidateId)
-                .orElseThrow(() -> new IllegalArgumentException("Candidate not found"));
-
-        return commentRepository.findAllByCandidate(candidate)
+    public List<CommentDto> findAllByCandidateId(UUID candidateId) {
+        return commentRepository.findAllByCandidateId(candidateId)
                 .stream()
                 .map(commentMapper::toDTO)
                 .toList();

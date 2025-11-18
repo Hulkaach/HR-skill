@@ -7,11 +7,13 @@ import com.hulkaach.hr_skill_ninja.exception.IllegalStatusTransitionException;
 import com.hulkaach.hr_skill_ninja.model.Candidate;
 import com.hulkaach.hr_skill_ninja.model.CandidateStatus;
 import com.hulkaach.hr_skill_ninja.repository.CandidateRepository;
+import com.hulkaach.hr_skill_ninja.repository.CandidateSearchRepository;
 import com.hulkaach.hr_skill_ninja.service.CandidateMapper;
 import com.hulkaach.hr_skill_ninja.service.CandidateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CandidateServiceImpl implements CandidateService {
     private final CandidateRepository repository;
+    private final CandidateSearchRepository candidateSearchRepository;
     private final CandidateMapper mapper;
 
     private static final Map<CandidateStatus, Set<CandidateStatus>> ALLOWED_TRANSITIONS = Map.of(
@@ -38,6 +41,7 @@ public class CandidateServiceImpl implements CandidateService {
     );
 
     @Override
+    @Transactional
     public CandidateDTO create(CreateCandidateRequest request) throws CustomExceptionChecked {
         Candidate candidate = new Candidate();
 
@@ -59,6 +63,7 @@ public class CandidateServiceImpl implements CandidateService {
     }
 
     @Override
+    @Transactional
     public CandidateDTO update(UUID id, UpdateCandidateRequest request) {
         Candidate candidate = getCandidateOrThrow(id);
 
@@ -67,29 +72,11 @@ public class CandidateServiceImpl implements CandidateService {
         candidate.setPosition(request.getPosition());
         candidate.setCvInfo(request.getCvInfo());
 
-        return mapper.toDTO(repository.update(candidate));
+        return mapper.toDTO(repository.save(candidate));
     }
 
     @Override
-    public CandidatesDTO saveAll(BatchCandidatesCreateRequest request) {
-        List<Candidate> candidates = request.getCandidates().stream()
-                .map(createCandidateRequest -> {
-                    Candidate candidate = mapper.toEntity(createCandidateRequest);
-                    candidate.setId(UUID.randomUUID());
-                    candidate.setStatus(CandidateStatus.NEW);
-                    return candidate;
-                })
-                .toList();
-        repository.saveAll(candidates);
-
-        return new CandidatesDTO(
-                candidates.stream()
-                        .map(mapper::toDTO)
-                        .toList()
-        );
-    }
-
-    @Override
+    @Transactional
     public CandidateDTO changeStatus(UUID id, ChangeStatusRequest request) {
         Candidate candidate = getCandidateOrThrow(id);
 
@@ -100,17 +87,19 @@ public class CandidateServiceImpl implements CandidateService {
         }
 
         candidate.setStatus(request.getStatus());
-        return mapper.toDTO(repository.update(candidate));
+        return mapper.toDTO(repository.save(candidate));
     }
 
     @Override
+    @Transactional
     public CandidateDTO changeComment(UUID id, ChangeCommentRequest request) {
         Candidate candidate = getCandidateOrThrow(id);
         candidate.setComment(request.getComment());
-        return mapper.toDTO(repository.update(candidate));
+        return mapper.toDTO(repository.save(candidate));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CandidateDTO> findAll() {
         return repository.findAll().stream()
                 .map(mapper::toDTO)
@@ -118,17 +107,25 @@ public class CandidateServiceImpl implements CandidateService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CandidateDTO findById(UUID id) {
         return repository.findById(id)
                 .map(mapper::toDTO)
                 .orElseThrow(() -> new CandidateNotFoundException(id));
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public List<CandidateDTO> search(String fio, Set<CandidateStatus> statuses, String position) {
-        return repository.search(fio, statuses, position).stream()
+    public List<CandidateDTO> search(String fio, Set<CandidateStatus> statuses) {
+        return candidateSearchRepository.search(fio, statuses).stream()
                 .map(mapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void deletebyId(UUID id) {
+        repository.deleteById(id);
     }
 
     private Candidate getCandidateOrThrow(UUID id) {

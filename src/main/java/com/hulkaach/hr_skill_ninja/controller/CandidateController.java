@@ -67,8 +67,7 @@ public class CandidateController {
     @GetMapping("/search")
     public List<CandidateDTO> search(
             @RequestParam(required = false) String fio,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String position) {
+            @RequestParam(required = false) String status) {
         Set<CandidateStatus> statuses = null;
         if (status != null && !status.isBlank()) {
             statuses = Arrays.stream(status.split(","))
@@ -77,6 +76,6 @@ public class CandidateController {
                     .collect(Collectors.toSet());
         }
 
-        return service.search(fio, statuses, position);
+        return service.search(fio, statuses);
     }
 }
