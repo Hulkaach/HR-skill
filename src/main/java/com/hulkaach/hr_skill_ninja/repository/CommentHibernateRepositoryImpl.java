@@ -2,16 +2,14 @@ package com.hulkaach.hr_skill_ninja.repository;
 
 import com.hulkaach.hr_skill_ninja.model.Candidate;
 import com.hulkaach.hr_skill_ninja.model.Comment;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
 import org.springframework.context.annotation.Primary;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,96 +17,39 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class CommentHibernateRepositoryImpl implements CommentRepository {
-    private final SessionFactory sessionFactory;
+    private final EntityManager entityManager;
 
     @Override
+    @Transactional
     public Comment save(Comment comment) {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            log.info("Save comment via Hibernate");
-
-            transaction = session.beginTransaction();
-
-            session.merge(comment);
-
-            transaction.commit();
-
-            return comment;
-        } catch (Exception e) {
-            if (Objects.nonNull(transaction)) {
-                transaction.rollback();
-            }
-            log.error("Error", e);
-            throw e;
-        }
+        log.info("Save comment via JPA");
+        entityManager.merge(comment);
+        return comment;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Comment> findById(UUID id) {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            log.info("Find comment by Id via Hibernate");
-
-            transaction = session.beginTransaction();
-
-            Comment comment = session.get(Comment.class, id);
-
-            transaction.commit();
-
-            return Optional.ofNullable(comment);
-        } catch (Exception e) {
-            if (Objects.nonNull(transaction)) {
-                transaction.rollback();
-            }
-            log.error("Error", e);
-            throw e;
-        }
+        log.info("Find comment by Id via JPA");
+        Comment comment = entityManager.find(Comment.class, id);
+        return Optional.ofNullable(comment);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Candidate> findAll() {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            log.info("Fina all candidates via Hibernate");
-
-            transaction = session.beginTransaction();
-
-            Query<Candidate> query = session.createQuery("FROM Candidate", Candidate.class);
-            List<Candidate> candidates = query.list();
-            transaction.commit();
-
-            return candidates;
-        } catch (Exception e) {
-            if (Objects.nonNull(transaction)) {
-                transaction.rollback();
-            }
-            log.error("Error", e);
-            throw e;
-        }
+        log.info("Fina all candidates via JPA");
+        TypedQuery<Candidate> query = entityManager.createQuery("FROM Candidate", Candidate.class);
+        return query.getResultList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Comment> findAllByCandidate(Candidate candidate) {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            log.info("Fina all candidates via Hibernate");
-
-            transaction = session.beginTransaction();
-
-            String hql = "FROM Comment c WHERE c.candidate = :candidate:";
-
-            List<Comment> commentQueries = session.createQuery(hql, Comment.class)
-                    .setParameter("candidate", candidate)
-                    .getResultList();
-            transaction.commit();
-
-            return commentQueries;
-        } catch (Exception e) {
-            if (Objects.nonNull(transaction)) {
-                transaction.rollback();
-            }
-            log.error("Error", e);
-            throw e;
-        }
+        log.info("Find all candidates via JPA");
+        String hql = "FROM Comment c WHERE c.candidate = :candidate:";
+        return entityManager.createQuery(hql, Comment.class)
+                .setParameter("candidate", candidate)
+                .getResultList();
     }
 }

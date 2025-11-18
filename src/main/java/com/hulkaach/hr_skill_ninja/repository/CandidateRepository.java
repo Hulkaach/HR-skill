@@ -13,11 +13,11 @@ public interface CandidateRepository {
 
     Candidate update(Candidate candidate);
 
-    void saveAll(List<Candidate> candidates);
-
     Optional<Candidate> findById(UUID id);
 
     List<Candidate> findAll();
 
     List<Candidate> search(String fio, Set<CandidateStatus> statuses, String position);
+
+    void deleteById(UUID id);
 }

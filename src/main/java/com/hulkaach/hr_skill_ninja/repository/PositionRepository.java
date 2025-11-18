@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PositionRepository {
-    void save(Position position);
+    Position save(Position position);
 
     Optional<Position> findById(UUID id);
 

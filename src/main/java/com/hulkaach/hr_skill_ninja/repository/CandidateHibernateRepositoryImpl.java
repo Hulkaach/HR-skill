@@ -2,152 +2,86 @@ package com.hulkaach.hr_skill_ninja.repository;
 
 import com.hulkaach.hr_skill_ninja.model.Candidate;
 import com.hulkaach.hr_skill_ninja.model.CandidateStatus;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @Repository
 @Primary
 @Slf4j
 @RequiredArgsConstructor
 public class CandidateHibernateRepositoryImpl implements CandidateRepository {
-    private final SessionFactory sessionFactory;
+    private final EntityManager entityManager;
 
     @Override
+    @Transactional
     public Candidate save(Candidate candidate) {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            log.info("Save candidate via Hibernate");
-
-            transaction = session.beginTransaction();
-
-            session.persist(candidate);
-
-            transaction.commit();
-
-            return candidate;
-        } catch (Exception e) {
-            if (Objects.nonNull(transaction)) {
-                transaction.rollback();
-            }
-            log.error("Error transaction", e);
-            throw e;
-        }
+        log.info("Save candidate via JPA");
+        entityManager.persist(candidate);
+        return candidate;
     }
 
     @Override
+    @Transactional
     public Candidate update(Candidate candidate) {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            log.info("Update candidate via Hibernate");
-
-            transaction = session.beginTransaction();
-
-            session.merge(candidate);
-
-            transaction.commit();
-
-            return candidate;
-        } catch (Exception e) {
-            if (Objects.nonNull(transaction)) {
-                transaction.rollback();
-            }
-            log.error("Error transaction", e);
-            throw e;
-        }
+        log.info("Update candidate via JPA");
+        return entityManager.merge(candidate);
     }
 
     @Override
-    public void saveAll(List<Candidate> candidates) {
-
-    }
-
-    @Override
+    @Transactional(readOnly = true)
     public Optional<Candidate> findById(UUID id) {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            log.info("Find candidate by ID via Hibernate");
-
-            transaction = session.beginTransaction();
-
-            Candidate candidate = session.get(Candidate.class, id);
-
-            transaction.commit();
-
-            return Optional.ofNullable(candidate);
-        } catch (Exception e) {
-            if (Objects.nonNull(transaction)) {
-                transaction.rollback();
-            }
-            log.error("Error transaction", e);
-            throw e;
-        }
+        log.info("Find candidate by Id via JPA");
+        Candidate candidate = entityManager.find(Candidate.class, id);
+        return Optional.ofNullable(candidate);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Candidate> findAll() {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            log.info("Find all candidates via Hibernate");
-
-            transaction = session.beginTransaction();
-
-            Query<Candidate> query = session.createQuery("FROM Candidate", Candidate.class);
-            List<Candidate> candidates = query.list();
-            transaction.commit();
-
-            return candidates;
-        } catch (Exception e) {
-            if (Objects.nonNull(transaction)) {
-                transaction.rollback();
-            }
-            log.error("Error transaction", e);
-            throw e;
-        }
+        log.info("Find all candidates via JPA");
+        TypedQuery<Candidate> query = entityManager.createQuery("FROM Candidate", Candidate.class);
+        return query.getResultList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Candidate> search(String fio, Set<CandidateStatus> statuses, String position) {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            log.info("Search candidates via Hibernate");
+        log.info("Search candidates via JPA");
+        String hql = buildSearchHQL(fio, statuses, position);
 
-            transaction = session.beginTransaction();
+        TypedQuery<Candidate> query = entityManager.createQuery(hql, Candidate.class);
 
-            String hql = buildSearchHQL(fio, statuses, position);
+        if (fio != null && !fio.trim().isEmpty()) {
+            query.setParameter("fio", "%" + fio.trim() + "%");
+        }
 
-            Query<Candidate> query = session.createQuery(hql, Candidate.class);
+        if (statuses != null && !statuses.isEmpty()) {
+            query.setParameter("statuses", "%" + statuses + "%");
+        }
 
-            if (fio != null && !fio.trim().isEmpty()) {
-                query.setParameter("fio", "%" + fio.trim() + "%");
-            }
+        if (position != null && !position.trim().isEmpty()) {
+            query.setParameter("position", "%" + position.trim() + "%");
+        }
 
-            if (statuses != null && !statuses.isEmpty()) {
-                query.setParameter("statuses", "%" + statuses + "%");
-            }
+        return query.getResultList();
+    }
 
-            if (position != null && !position.trim().isEmpty()) {
-                query.setParameter("position", "%" + position.trim() + "%");
-            }
-
-            List<Candidate> candidates = query.list();
-
-            transaction.commit();
-
-            return candidates;
-        } catch (Exception e) {
-            if (Objects.nonNull(transaction)) {
-                transaction.rollback();
-            }
-            log.error("Error transaction", e);
-            throw e;
+    @Override
+    public void deleteById(UUID id) {
+        log.info("Delete candidate by Id via JPA");
+        Candidate candidate = entityManager.find(Candidate.class, id);
+        if (candidate != null) {
+            entityManager.remove(candidate);
         }
     }
 
