@@ -11,9 +11,9 @@ import java.util.UUID;
 public interface CandidateRepository {
     Candidate save(Candidate candidate);
 
-    void saveAll(List<Candidate> candidates);
-
     Candidate update(Candidate candidate);
+
+    void saveAll(List<Candidate> candidates);
 
     Optional<Candidate> findById(UUID id);
 

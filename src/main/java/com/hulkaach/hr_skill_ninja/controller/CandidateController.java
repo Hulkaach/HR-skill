@@ -27,11 +27,11 @@ public class CandidateController {
         return service.create(request);
     }
 
-    @PostMapping("/batch")
-    @ResponseStatus(HttpStatus.CREATED)
-    public CandidatesDTO createBatch(@Valid @RequestBody BatchCandidatesCreateRequest request) {
-        return service.saveAll(request);
-    }
+//    @PostMapping("/batch")
+//    @ResponseStatus(HttpStatus.CREATED)
+//    public CandidatesDTO createBatch(@Valid @RequestBody BatchCandidatesCreateRequest request) {
+//        return service.saveAll(request);
+//    }
 
     @PutMapping("/{id}")
     public CandidateDTO update(@PathVariable UUID id, @Valid @RequestBody UpdateCandidateRequest request) {
@@ -43,10 +43,10 @@ public class CandidateController {
         return service.changeStatus(id, request);
     }
 
-    @PutMapping("/{id}/comment")
-    public CandidateDTO changeComment(@PathVariable UUID id, @Valid @RequestBody ChangeCommentRequest request) {
-        return service.changeComment(id, request);
-    }
+//    @PutMapping("/{id}/comment")
+//    public CandidateDTO changeComment(@PathVariable UUID id, @Valid @RequestBody ChangeCommentRequest request) {
+//        return service.changeComment(id, request);
+//    }
 
     @GetMapping
     public List<CandidateDTO> findAll() {
@@ -57,6 +57,12 @@ public class CandidateController {
     public CandidateDTO findById(@PathVariable UUID id) {
         return service.findById(id);
     }
+
+//    @DeleteMapping("/{id}")
+//    @ResponseStatus(HttpStatus.NO_CONTENT)
+//    public void deleteById(@PathVariable UUID id){
+//        service.deleteById;
+//    }
 
     @GetMapping("/search")
     public List<CandidateDTO> search(

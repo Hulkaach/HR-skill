@@ -2,15 +2,22 @@ server:
   port: 8090
 spring:
   config:
-    import: C:\Skillbox\lections\hr-skill-ninja\db-secret.yaml
+    import: /Users/antonkoselev/Documents/Skillbox/HR-skill/db-secret.yaml
   datasource:
-    url: "jdbc:postgresql://localhost:5433/postgres"
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
-      connection-timeout: 30_000
-      leak-detection-threshold: 10_000
-      idle-timeout: 30_000
+    url: "jdbc:postgresql://localhost:5433/hrninja"
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        ddl-auto: validate
+        format_sql: true
+
+#    hikari: #пока это не нужно, т.к. есть HibernateConfig
+#      maximum-pool-size: 10
+#      minimum-idle: 5
+#      connection-timeout: 30_000
+#      leak-detection-threshold: 10_000
+#      idle-timeout: 30_000
     driver-class-name: org.postgresql.Driver
   flyway:
     enabled: true
